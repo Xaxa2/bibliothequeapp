@@ -1,0 +1,54 @@
+name: Symfony Project CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app/symfony
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl
+          tools: composer:v2
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)" >> $GITHUB_ENV
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      ## —— Composer 🧙‍️ —————————————————————————————————————————————————————————
+      - name: Install Composer dependencies
+        run: ls -la
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-scripts --prefer-dist
+        
+      ## —— Static analysis ✨ —————————————————————————————————————————————————
+      - name: Run PHP-CS-Fixer
+        run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run
+
+      - name: Run PHP-Stan
+        run: php vendor/bin/phpstan analyse --configuration=phpstan.dist.neon
