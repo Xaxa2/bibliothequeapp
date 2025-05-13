@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BookRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,24 @@ class Book
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    /**
+     * @var Collection<int, Booking>
+     */
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'book')]
+    private Collection $bookings;
+
+    /**
+     * @var Collection<int, Category>
+     */
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'books')]
+    private Collection $category;
+
+    public function __construct()
+    {
+        $this->bookings = new ArrayCollection();
+        $this->category = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -105,6 +125,60 @@ class Book
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): static
+    {
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setBook($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): static
+    {
+        if ($this->bookings->removeElement($booking)) {
+            // set the owning side to null (unless already changed)
+            if ($booking->getBook() === $this) {
+                $booking->setBook(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategory(): Collection
+    {
+        return $this->category;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->category->contains($category)) {
+            $this->category->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        $this->category->removeElement($category);
 
         return $this;
     }

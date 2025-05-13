@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -40,6 +42,24 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $role = null;
+
+    /**
+     * @var Collection<int, Subscription>
+     */
+    #[ORM\OneToMany(targetEntity: Subscription::class, mappedBy: 'user')]
+    private Collection $subscriptions;
+
+    /**
+     * @var Collection<int, Booking>
+     */
+    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'user')]
+    private Collection $bookings;
+
+    public function __construct()
+    {
+        $this->subscriptions = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -157,6 +177,66 @@ class User
     public function setRole(string $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getUser() === $this) {
+                $subscription->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Booking>
+     */
+    public function getBookings(): Collection
+    {
+        return $this->bookings;
+    }
+
+    public function addBooking(Booking $booking): static
+    {
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBooking(Booking $booking): static
+    {
+        if ($this->bookings->removeElement($booking)) {
+            // set the owning side to null (unless already changed)
+            if ($booking->getUser() === $this) {
+                $booking->setUser(null);
+            }
+        }
 
         return $this;
     }
