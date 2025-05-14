@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello SecurityController!{% endblock %}
+
+{% block body %}
+
+{{ form_start(form) }}
+{{ form_widget(form.email) }}
+{{ form_widget(form.password) }}
+<input type="hidden" name="_csrf_token" value="{{csrf_token('authenticate')}}">
+<button type="submit">Envoi</button>
+{{form_end(form)}}
+
+{% endblock %}

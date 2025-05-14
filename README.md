@@ -43,6 +43,15 @@ server running on http://localhost:8010
 
 ### Pipeline
 Configuration à venir
+
+## —— Static analysis ✨ —————————————————————————————————————————————————      - name: Run PHP-CS-Fixer        
+run: 
+php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run  
+
+    - name: Run PHPStan        
+run: 
+php vendor/bin/phpstan analyse --configuration=phpstan.dist.neon
+
 ---
 
 ```yaml
